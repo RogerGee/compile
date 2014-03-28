@@ -1,0 +1,6 @@
+./obj/
+./dobj/
+compile
+compile-debug
+*.o
+
