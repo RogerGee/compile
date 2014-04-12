@@ -5,6 +5,10 @@
 #include <string.h>
 #include <assert.h>
 
+#define FILE_CHECK_SUCCESS 0
+#define FILE_CHECK_DOES_NOT_EXIST 1
+#define FILE_CHECK_ACCESS_DENIED 2
+#define FILE_CHECK_NOT_REGULAR_FILE 3
 #define MAX_EXTENSIONS 5 /* maximum number of extensions to potentially examine */
 
 extern const char* PROGRAM_NAME;
@@ -13,6 +17,7 @@ extern const char* PROGRAM_NAME;
 static void fatal_stop(const char* message); /* system-specific implementation */
 static void process_target(const char* source,stringbuf* dest,compiler** pinfo);
 static int lookup_ext(const char** ext,const char* source); /* system-specific implementation */
+static int check_file(const char* fileName); /* system-specific implementation - returns FILE_CHECK code */
 
 /* platform-dependent code */
 
@@ -87,6 +92,8 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
     /* assume the source is a target file; attempt to determine compiler */
     int i;
     int len;
+    short found;
+    int check_flag;
     const char* extensions[MAX_EXTENSIONS];
     const char** pext = extensions; /* point to first extension string */
     /* if the source has a final .ext, get a pointer to it;
@@ -94,6 +101,7 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
     len = strlen(source);
     *pext = source+len;
     i = len-1;
+    found = 0;
     while (i>0 && **pext!='.')
     {
         --i;
@@ -101,6 +109,8 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
     }
     if (**pext != '.')
         *pext = NULL;
+    else
+        found = 1;
     if (*pinfo == NULL)
     {
         /* compiler info has not yet been determined; use
@@ -114,12 +124,12 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
             int ex_c = lookup_ext(pext,source);
             if (ex_c<=0 || *pext==NULL)
             {
-                fprintf(stderr,"%s: error: '%s' target did not match any existing or targetable files\n",PROGRAM_NAME,source);
+                fprintf(stderr,"%s: error: target '%s' did not match any existing targetable file\n",PROGRAM_NAME,source);
                 fatal_stop("cannot resolve target");
             }
             else if (ex_c > 1)
             {
-                fprintf(stderr,"%s: error: '%s' target ambiguously matches multiple targetable files\n",PROGRAM_NAME,source);
+                fprintf(stderr,"%s: error: target '%s' ambiguously matches multiple targetable files\n",PROGRAM_NAME,source);
                 fprintf(stderr,"%s: note: suggest explicit file extension: one of:",PROGRAM_NAME);
                 for (i = 0;i<ex_c;i++)
                     fprintf(stderr," %s",pext[i]);
@@ -128,9 +138,14 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
             }
         }
         *pinfo = lookup_compiler(*pext);
-        assert(pinfo != NULL);
+        if (*pinfo == NULL)
+        {
+            fprintf(stderr,"%s: error: target '%s' does not match any targetable file type\n",PROGRAM_NAME,source);
+            fatal_stop("cannot perform action with specified targets");
+        }
     }
-    if (*pext != NULL)
+    /* copy source name to destination buffer; include extension if need be */
+    if (!found) /* extension wasn't found initially; append looked-up extension to source file name */
     {
         /* assume all input files use the same extension */
         assign_stringbuf(dest,source);
@@ -139,4 +154,14 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
     else
         /* simply assign filename to destination */
         assign_stringbuf(dest,source);
+    /* check to make sure target exists */
+    check_flag = check_file(dest->buffer);
+    if (check_flag != FILE_CHECK_SUCCESS)
+    {
+        if (check_flag == FILE_CHECK_DOES_NOT_EXIST)
+            fprintf(stderr,"%s: error: target '%s' does not exist\n",PROGRAM_NAME,source);
+        else if (check_flag == FILE_CHECK_ACCESS_DENIED)
+            fprintf(stderr,"%s: error: permission denied: cannot access target '%s'\n",PROGRAM_NAME,source);
+        fatal_stop("bad target");
+    }
 }

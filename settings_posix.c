@@ -137,7 +137,8 @@ const char* read_next_entry()
     while (1)
     {
         int len;
-        if (n == 0)
+        char last;
+        if (n <= 0) /* (n could be -1) */
         {
             n = read(settings_fd,ibuf,120);
             if (n < 0)
@@ -151,13 +152,14 @@ const char* read_next_entry()
             pbuf = ibuf;
         }
         len = 0;
-        while (len<n && ibuf[len]!='\n')
+        while (len<n && pbuf[len]!='\n')
             ++len;
         concat_stringbuf_ex(&entry_buffer,pbuf,len);
-        if (len<n && ibuf[len]=='\n')
-            break;
-        n -= len;
+        last = len<n ? pbuf[len] : 0;
+        n -= ++len; /* increment len to count pbuf[len] */
         pbuf += len;
+        if (last == '\n')
+            break;
     }
     return entry_buffer.buffer;
 }
