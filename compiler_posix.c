@@ -21,29 +21,24 @@ int lookup_ext(const char** ext,const char* source)
     pdir = opendir(".");
     *ext = NULL;
     srclen = strlen(source);
-    if (pdir != NULL)
-    {
+    if (pdir != NULL) {
         struct dirent* ent;
-        while (1)
-        {
+        while (1) {
             ent = readdir(pdir);
             if (ent == NULL)
                 break;
-            if (ent->d_type == DT_REG)
-            {
+            if (ent->d_type == DT_REG) {
                 int len;
                 char* pext;
                 /* obtain file extension of entry */
                 len = strlen(ent->d_name);
                 pext = ent->d_name+len;
-                while (len>0 && *pext!='.')
-                {
+                while (len>0 && *pext!='.') {
                     --len;
                     --pext;
                 }
                 /* check to see if prefix.ext matches prefix */
-                if (top<MAX_EXTENSIONS && *pext=='.' && len==srclen && strncmp(source,ent->d_name,srclen)==0)
-                {
+                if (top<MAX_EXTENSIONS && *pext=='.' && len==srclen && strncmp(source,ent->d_name,srclen)==0) {
                     /* the extension must belong to one of the handled extensions */
                     ext[top] = check_extension(pext);
                     if (ext[top] != NULL)
@@ -63,14 +58,12 @@ int lookup_ext(const char** ext,const char* source)
 int check_file(const char* fileName)
 {
     struct stat st;
-    if (stat(fileName,&st) == 0)
-    {
+    if (stat(fileName,&st) == 0) {
         /* check file type */
         if ((st.st_mode & S_IFMT) != S_IFREG)
             return FILE_CHECK_NOT_REGULAR_FILE;
         /* check permissions */
-        if (access(fileName,R_OK) == -1)
-        {
+        if (access(fileName,R_OK) == -1) {
             if (errno == EACCES)
                 return FILE_CHECK_ACCESS_DENIED;
             return -1;
@@ -82,4 +75,17 @@ int check_file(const char* fileName)
     if (errno == ENOENT)
         return FILE_CHECK_DOES_NOT_EXIST;
     return -1;
+}
+
+int invoke_compiler(const char* compilerName,const char* arguments)
+{
+    int i;
+    i = 0;
+    while (arguments[i]) {
+        printf("%s ",arguments+i);
+        while (arguments[i])
+            ++i;
+        ++i;
+    }
+    printf("\n");
 }

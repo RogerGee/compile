@@ -16,8 +16,7 @@ int main(int argc,const char* argv[])
     int acnt; /* number of args passed to the compiler */
     int fproceed; /* if non-zero then proceed with invokation */
     char const** compilerArgs; /* arguments passed to the compiler */
-    if (--argc == 0)
-    {
+    if (--argc == 0) {
         fprintf(stderr,"%s: no input targets\n",argv[0]);
         return 1;
     }
@@ -30,10 +29,8 @@ int main(int argc,const char* argv[])
     fproceed = 1;
     compilerArgs = malloc(sizeof(char*)*argc);
     PROGRAM_NAME = argv[0];
-    for (i = 1;i<=argc;i++)
-    {
-        if (argv[i][0] == '-')
-        {
+    for (i = 1;i<=argc;i++) {
+        if (argv[i][0] == '-') {
             int cnt = 1;
             while (argv[i][cnt] == '-')
                 ++cnt;
@@ -43,8 +40,7 @@ int main(int argc,const char* argv[])
             else if (cnt >= 3)
                 /* this option gets modified slightly to --arg */
                 compilerArgs[acnt++] = argv[i]+cnt-2;
-            else if (cnt == 2)
-            {
+            else if (cnt == 2) {
                 /* these args refer to options to this program */
                 const char* option = argv[i]+2;
                 fproceed = 0;
@@ -59,8 +55,7 @@ int main(int argc,const char* argv[])
         else
             compilerArgs[acnt++] = argv[i];
     }
-    if (fproceed)
-    {
+    if (fproceed) {
         session ses;
         /* read and process settings file */
         load_settings_from_file();

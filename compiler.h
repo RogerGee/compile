@@ -9,6 +9,7 @@
    complete invocation of a compiler process */
 typedef struct {
     compiler* compiler_info; /* compiler information for session */
+    stringbuf project; /* project name; based on first target minus extension */
     stringbuf* targets; /* list of target files to pass to compiler */
     stringbuf* options; /* list of options supplied by user on command line */
     int targets_c; /* number of targets */

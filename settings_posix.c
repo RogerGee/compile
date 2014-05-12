@@ -27,8 +27,7 @@ const char* find_settings_file()
     pwd = getpwuid(uid);
     if (pwd == NULL)
         fatal_stop("could not obtain user information for accessing settings");
-    else
-    {
+    else {
         const char* init_dir = "/.compile"; /* path relative to home directory */
         const char* targ_fname = "/targets"; /* path relative to init_dir */
         int i;
@@ -40,13 +39,10 @@ const char* find_settings_file()
         strcpy(fnbuf,pwd->pw_dir);
         strcpy(fnbuf+i,init_dir);
         /* check to see if settings directory exists as directory */
-        if (stat(fnbuf,&istat) == -1)
-        {
-            if (errno == ENOENT)
-            {
+        if (stat(fnbuf,&istat) == -1) {
+            if (errno == ENOENT) {
                 /* attempt to create settings directory */
-                if (mkdir(fnbuf,S_IRWXU) == -1)
-                {
+                if (mkdir(fnbuf,S_IRWXU) == -1) {
                     if (errno == EACCES)
                         fprintf(stderr,"%s: error: cannot create settings directory: permission denied\n",PROGRAM_NAME);
                     else
@@ -54,15 +50,13 @@ const char* find_settings_file()
                     flag = 1;
                 }
             }
-            else
-            {
+            else {
                 if (errno == EACCES)
                     fprintf(stderr,"%s: error: cannot access settings directory: permission denied\n",PROGRAM_NAME);
                 flag = 1;
             }
         }
-        else if ( !S_ISDIR(istat.st_mode) )
-        {
+        else if ( !S_ISDIR(istat.st_mode) ) {
             fprintf(stderr,"%s: error: settings directory name exists as something other than a directory!\n",PROGRAM_NAME);
             flag = 1;
         }
@@ -73,32 +67,26 @@ const char* find_settings_file()
         strcpy(fnbuf+i,targ_fname);
         /* check to see if targets file exists as regular file */
         flag = 0;
-        if (stat(fnbuf,&istat) == -1)
-        {
-            if (errno == ENOENT)
-            {
+        if (stat(fnbuf,&istat) == -1) {
+            if (errno == ENOENT) {
                 /* attempt to create a default targets file */
                 int fd;
-                if ((fd = open(fnbuf,O_CREAT|O_WRONLY,S_IWUSR|S_IRUSR)) == -1)
-                {
+                if ((fd = open(fnbuf,O_CREAT|O_WRONLY,S_IWUSR|S_IRUSR)) == -1) {
                     fprintf(stderr,"%s: error: cannot create default targets file\n",PROGRAM_NAME);
                     flag = 1;
                 }
-                else
-                {
+                else {
                     write(fd,DEFAULT_TARGET_ENTRIES,strlen(DEFAULT_TARGET_ENTRIES));
                     close(fd);
                 }
             }
-            else
-            {
+            else {
                 if (errno == EACCES)
                     fprintf(stderr,"%s: error: cannot access targets file: permission denied\n",PROGRAM_NAME);
                 flag = 1;
             }
         }
-        else if ( !S_ISREG(istat.st_mode) )
-        {
+        else if ( !S_ISREG(istat.st_mode) ) {
             fprintf(stderr,"%s: error: targets file name exists as something other than a regular file!\n",PROGRAM_NAME);
             flag = 1;
         }
@@ -134,17 +122,14 @@ const char* read_next_entry()
     static const char* pbuf = NULL;
     assert(settings_fd != -1);
     reset_stringbuf(&entry_buffer);
-    while (1)
-    {
+    while (1) {
         int len;
         char last;
-        if (n <= 0) /* (n could be -1) */
-        {
+        if (n <= 0) { /* (n could be -1) */
             n = read(settings_fd,ibuf,120);
             if (n < 0)
                 fatal_stop("could not read from targets file");
-            else if (n == 0)
-            {
+            else if (n == 0) {
                 if (entry_buffer.used == 0)
                     return NULL;
                 break;

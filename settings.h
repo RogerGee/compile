@@ -9,6 +9,7 @@ typedef struct {
         e.g.: option1\0option2\0option3\0final-option\0\0 */
     stringbuf options; /* string of default options to be supplied to compiler */
     stringbuf extension; /* the file extension that maps to the compiler */
+    int options_c;
 } compiler;
 
 void init_compiler(compiler*);

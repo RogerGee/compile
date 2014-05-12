@@ -12,7 +12,7 @@ extern const char* PROGRAM_NAME;
 /* data internal to this unit */
 static compiler loaded_compilers[MAX_COMPILERS];
 static int loaded_compilers_c = 0;
-static const char* const DEFAULT_TARGET_ENTRIES = ".c gcc";
+static const char* const DEFAULT_TARGET_ENTRIES = ".c gcc -o$project";
 
 /* functions internal to this unit */
 static void fatal_stop(const char* message); /* system-specific implementation */
@@ -38,6 +38,7 @@ void init_compiler(compiler* pcomp)
     init_stringbuf(&pcomp->program);
     init_stringbuf(&pcomp->options);
     init_stringbuf(&pcomp->extension);
+    pcomp->options_c = 0;
 }
 
 void destroy_compiler(compiler* pcomp)
@@ -45,6 +46,7 @@ void destroy_compiler(compiler* pcomp)
     destroy_stringbuf(&pcomp->program);
     destroy_stringbuf(&pcomp->options);
     destroy_stringbuf(&pcomp->extension);
+    pcomp->options_c = 0;
 }
 
 void load_compiler(compiler* pcomp,const char* entry)
@@ -64,22 +66,25 @@ void load_compiler(compiler* pcomp,const char* entry)
     seek_whitespace(&entry);
     ptr = seek_until_space(entry);
     len = ptr - entry;
-    if (len <= 0)
-    {
+    if (len <= 0) {
         fprintf(stderr,"%s: syntax error: expected program name after extension '%s'\n",PROGRAM_NAME,pcomp->extension.buffer);
-        fatal_stop("syntax error");
+        fatal_stop("syntax error in target file");
     }
     /* read program name */
     assign_stringbuf_ex(&pcomp->program,entry,len);
-    /* read options: note that options are optional */
-    while (*ptr)
-    {
+    /* read options: note that options are optional; special
+       option tokens are prefixed by a $ sign followed by an identifier */
+    pcomp->options_c = 0;
+    while (*ptr) {
+        int i;
         entry = ptr+1;
         seek_whitespace(&entry);
         ptr = seek_until_space(entry);
         len = ptr - entry;
         concat_stringbuf_ex(&pcomp->options,entry,len);
-        ++pcomp->options.used; /* include null terminator in used part of string buffer */
+        /* separate the options by a zero byte */
+        append_terminator_stringbuf(&pcomp->options);
+        ++pcomp->options_c;
     }
     /* add a final null terminator to signify the end */
     len = pcomp->options.used++;
@@ -94,8 +99,7 @@ void load_settings_from_file()
     assert(loaded_compilers_c == 0);
     fname = find_settings_file();
     open_settings_file(fname);
-    while (loaded_compilers_c < MAX_COMPILERS)
-    {
+    while (loaded_compilers_c < MAX_COMPILERS) {
         compiler* comp = loaded_compilers+loaded_compilers_c;
         pentry = read_next_entry();
         if (pentry == NULL)
@@ -110,8 +114,7 @@ void load_settings_from_file()
 void unload_settings()
 {
     int i = 0;
-    while (i < loaded_compilers_c)
-    {
+    while (i < loaded_compilers_c) {
         destroy_compiler(loaded_compilers+i);
         ++i;
     }
@@ -122,8 +125,7 @@ compiler* lookup_compiler(const char* ext)
 {
     int i;
     i = 0;
-    while (i < loaded_compilers_c)
-    {
+    while (i < loaded_compilers_c) {
         if (strcmp(loaded_compilers[i].extension.buffer,ext) == 0)
             return loaded_compilers+i;
         ++i;
@@ -135,8 +137,7 @@ const char* check_extension(const char* ext)
 {
     int i;
     i = 0;
-    while (i < loaded_compilers_c)
-    {
+    while (i < loaded_compilers_c) {
         if (strcmp(loaded_compilers[i].extension.buffer,ext) == 0)
             return loaded_compilers[i].extension.buffer;
         ++i;

@@ -23,8 +23,7 @@ void grow_stringbuf(stringbuf* pbuf)
 {
     int newsz;
     newsz = pbuf->size * 2;
-    if (newsz > 1)
-    {
+    if (newsz > 1) {
         int i;
         char* pnew;
         pnew = malloc(newsz);
@@ -88,6 +87,23 @@ void concat_stringbuf_ex(stringbuf* pbuf,const char* str,int n)
     strncpy(app,str,n);
     app[n] = 0; /* provide null terminator */
     pbuf->used = sz;
+}
+
+void truncate_stringbuf(stringbuf* pbuf,int length)
+{
+    if (length>=0 && length<pbuf->used) {
+        pbuf->buffer[length] = 0;
+        pbuf->used = length;
+        pbuf->size = length+1;
+    }
+}
+
+void append_terminator_stringbuf(stringbuf* pbuf)
+{
+    ++pbuf->used; /* include last terminator in string payload */
+    if (pbuf->used >= pbuf->size)
+        grow_stringbuf(pbuf);
+    pbuf->buffer[pbuf->used] = 0;
 }
 
 void reset_stringbuf(stringbuf* pbuf)
