@@ -20,6 +20,6 @@ typedef struct {
 void init_session(session*,int size); /* allocate string buffers for at most 'size' options per type */
 void destroy_session(session*);
 void load_session(session*,int argc,const char** argv); /* returns 0 on success */
-void compile_session(session*); /* returns 0 on success */
+int compile_session(session*); /* returns 0 on success */
 
 #endif

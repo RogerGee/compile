@@ -3,5 +3,6 @@
 test/
 compile
 compile-debug
+compile.exe
 *.o
-
+*.obj

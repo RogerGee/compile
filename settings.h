@@ -17,7 +17,7 @@ void destroy_compiler(compiler*);
 void load_compiler(compiler*,const char* entry); /* load compiler settings from entry in settings file */
 
 /* settings file management */
-void load_settings_from_file();
+void load_settings_from_file(); /* read settings file(s) to initialize settings information */
 void unload_settings();
 compiler* lookup_compiler(const char* ext);
 const char* check_extension(const char* ext); /* returns pointer to compiler info extension string buffer on success else NULL */

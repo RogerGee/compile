@@ -18,7 +18,8 @@ static const char* const DEFAULT_TARGET_ENTRIES = ".c gcc -o$project";
 static void fatal_stop(const char* message); /* system-specific implementation */
 static const char* seek_until_space(const char* iterator);
 static void seek_whitespace(const char** iterator);
-static const char* find_settings_file(); /* system-specific implementation */
+static const char* check_settings_path(); /* system-specific implementation */
+static const char* find_targets_file(const char* settingsDir); /* system-specific implementation */
 static void open_settings_file(const char* fname); /* system-specific implementation */
 static void close_settings_file(); /* system-specific implementation */
 static const char* read_next_entry(); /* system-specific implementation */
@@ -95,9 +96,10 @@ void load_compiler(compiler* pcomp,const char* entry)
 
 void load_settings_from_file()
 {
-    const char* fname, *pentry;
+    const char* dname, *fname, *pentry;
     assert(loaded_compilers_c == 0);
-    fname = find_settings_file();
+    dname = check_settings_path();
+    fname = find_targets_file(dname);
     open_settings_file(fname);
     while (loaded_compilers_c < MAX_COMPILERS) {
         compiler* comp = loaded_compilers+loaded_compilers_c;

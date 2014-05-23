@@ -9,7 +9,9 @@
 #define FILE_CHECK_DOES_NOT_EXIST 1
 #define FILE_CHECK_ACCESS_DENIED 2
 #define FILE_CHECK_NOT_REGULAR_FILE 3
+
 #define MAX_EXTENSIONS 5 /* maximum number of extensions to potentially examine */
+#define MAX_ARGUMENT 500 /* maximum number of command line options to compiler process */
 
 extern const char* PROGRAM_NAME;
 
@@ -92,7 +94,7 @@ void load_session(session* psession,int argc,const char** argv)
     psession->options_c = ui;
 }
 
-void compile_session(session* psession)
+int compile_session(session* psession)
 {
     int i;
     stringbuf arguments;
@@ -112,8 +114,18 @@ void compile_session(session* psession)
         concat_stringbuf(&arguments,psession->targets[i].buffer);
         append_terminator_stringbuf(&arguments);
     }
-    invoke_compiler(psession->compiler_info->program.buffer,arguments.buffer);
+    i = invoke_compiler(psession->compiler_info->program.buffer,arguments.buffer);
+    if (i == -1) {
+        fprintf(stderr,"%s: error: could not properly start compiler process\n",PROGRAM_NAME);
+        fatal_stop("compile failure");
+    }
+    else if (i != 0) { /* print the return code if compilation failure */
+        fprintf(stderr,"%s: compiler process returned code %d\n",PROGRAM_NAME,i);
+        fprintf(stderr,"%s: error: compilation failed\n",PROGRAM_NAME);
+    }
     destroy_stringbuf(&arguments);
+    /* return exit code (assume 0 for success) */
+    return i;
 }
 
 /* definitions of internal functions in this unit */

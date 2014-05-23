@@ -6,6 +6,8 @@
 
 /* globals */
 const char* PROGRAM_NAME;
+const unsigned short PROGRAM_MAJOR_VERSION = 2;
+const unsigned short PROGRAM_MINOR_VERSION = 0; /* every increment counts as a hundreth */
 
 static void option_help();
 static void option_version();
@@ -65,13 +67,17 @@ int main(int argc,const char* argv[])
         destroy_session(&ses);
         unload_settings();
     }
-    free(compilerArgs);
+    free((void*)compilerArgs);
 }
 
 void option_help()
 {
+    printf("");
 }
 
 void option_version()
 {
+    char versionString[20];
+    sprintf(versionString,"%hu.%.2hu",PROGRAM_MAJOR_VERSION,PROGRAM_MINOR_VERSION);
+    printf("%s %s\nThis is free software; feel free to redistribute it.\n\nWritten by Roger Gee.\n",PROGRAM_NAME,versionString);
 }
