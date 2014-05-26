@@ -1,5 +1,8 @@
-./obj/
-./dobj/
+obj/
+dobj/
+Debug/
+Release/
+x64/
 test/
 compile
 compile-debug

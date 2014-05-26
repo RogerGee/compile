@@ -77,7 +77,6 @@ void load_compiler(compiler* pcomp,const char* entry)
        option tokens are prefixed by a $ sign followed by an identifier */
     pcomp->options_c = 0;
     while (*ptr) {
-        int i;
         entry = ptr+1;
         seek_whitespace(&entry);
         ptr = seek_until_space(entry);

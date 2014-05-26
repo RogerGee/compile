@@ -68,7 +68,6 @@ void destroy_session(session* psession)
 void load_session(session* psession,int argc,const char** argv)
 {
     int i, ui, ti;
-    stringbuf ext;
     for (i = 0,ui = 0,ti = 0;i<argc;i++) {
         if (argv[i][0] == '-') {
             assert(ui < psession->alloc_size);
