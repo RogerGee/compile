@@ -1,0 +1,80 @@
+.TH compile 1
+.SH NAME
+compile \- invoke compiler programs with customized command\-lines
+.SH SYNOPSIS
+.B compile
+[\fItarget\fR ...]
+[\fB\-\fIcompiler\-option value\fR ...]
+[\fB\-\-\-\fIcompiler\-long\-option\fR ...]
+[\fB\-\-help\fR]
+[\fB\-\-version\fR]
+.SH DESCRIPTION
+The \fBcompile\fR program simplifies compiler invocation by mapping a file extension to a
+user\-specified command\-line. These command\-lines are stored in a targets file:
+\fI~/.compile/targets\fR. See the FILES section for a detailed description of this file.
+
+The user specifies a target (or a series of targets), which is a source code file name with or without a
+file extension. A target may be specified using a relative or absolute path. If no extension
+is provided, the directory specified by the target's path is searched for files that match the
+target plus a targetable extension specified in the targets file. If no path was specified the
+current working directory is searched. If multiple targets exist in the same location with the
+same name, they create ambiguity, in which case the user must explicitly specify the file extension.
+
+If multiple targets are specified, then they must all resolve to files that have the same extension.
+If the first target resolves to a targetable extension, then it is assumed that any following
+targets have the same extension. If they do not, then \fBcompile\fR fails.
+
+In conjunction with determining the target type (extension) for the invokation, the first target also
+determines the project name, which is a string that is used to name the invokation and can be used
+in the targets file (see FILES section). If the first target contains an extension, then the project
+name is a truncated version of this target minus its extension.
+
+Compile can also pass other options on to the compiler process that it spawns. Depending on the compiler,
+this may be used to overwrite options in the targets file. Any token specified on the command\-line that
+begins either with a single dash (\-) or triple dash (\-\-\-) is passed on to the compiler process. A triple
+dash is resolved to a double dash (\-\-). Three dashes are used to indicate that the long option is intended
+for the compiler process and not \fBcompile\fR itself.
+.SH OPTIONS
+.TP
+\fItarget\fR
+a file name with or without the extension; may contain a relative or absolute path
+.TP
+\fB\-\fIcompiler\-option value\fR
+a short\-option to pass to the compiler process; if the option requires an argument, then no whitespace should
+separate the option from its argument (e.g. \-ooutput\-file where '\-o' is the option and 'output\-file' is
+the argument)
+.TP
+\fB\-\-\-\fIcompiler\-long\-option\fR
+a long\-option to pass to the compiler process; if the option requires an argument, then no whitespace should
+separate the option from its argument
+.TP
+\fB\-\-help\fR
+display brief help information
+.TP
+\fB\-\-version\fR
+display version information
+.SH FILES
+The \fBcompile\fR program uses a targets file to store user\-specified command\-lines used to invoke compiler
+processes. This file is called \fItargets\fR and is located within the \fI.compile\fR directory, which is a 
+subdirectory of the current user's home directory (\fI~/.compile/targets\fR).
+
+The file employs a simple, line\-oriented format. Each line represents a complete target kind, mapping a file
+extension to a command\-line. The first token (separated by whitespace) is the extension. If no leading dot (.)
+is specified then \fBcompile\fR adds it for you. After the extension comes the command\-line. The first token
+of the command\-line should be the program for the compiler you wish to use.
+
+The special symbol \fI$project\fR may appear in the command\-line. This symbol is replaced by the project name of
+the invocation session. This is the name of the first target specified to \fBcompile\fR minus any extension.
+
+If the targets file does not exist, \fBcompile\fR creates a default targets file for you, which maps the .c extension
+to the GNU C compiler gcc.
+
+Here is an example that automatically names the output program according to the project name:
+
+\fI~/\.compile/targets\fR:
+.RS
+ .c gcc \-o$project
+ .cpp g++ \-o$project \-Wall
+.RE
+.SH AUTHOR
+Written by Roger P. Gee <rpg11a@acu.edu>

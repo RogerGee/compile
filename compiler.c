@@ -186,14 +186,24 @@ void process_target(const char* source,stringbuf* dest,compiler** pinfo)
         assign_stringbuf(dest,source);
         concat_stringbuf(dest,(*pinfo)->extension.buffer);
     }
-    else
+    else {
+        /* check to see if extension is correct */
+        if (strcmp((*pinfo)->extension.buffer,*pext) != 0) {
+            fprintf(stderr,"%s: error: target '%s' does not have '%s' extension\n",PROGRAM_NAME,source,(*pinfo)->extension.buffer);
+            fatal_stop("bad target");
+        }
         /* simply assign filename to destination */
         assign_stringbuf(dest,source);
+    }
     /* check to make sure target exists */
     check_flag = check_file(dest->buffer);
     if (check_flag != FILE_CHECK_SUCCESS) {
-        if (check_flag == FILE_CHECK_DOES_NOT_EXIST)
-            fprintf(stderr,"%s: error: target '%s' does not exist\n",PROGRAM_NAME,source);
+        if (check_flag == FILE_CHECK_DOES_NOT_EXIST) {
+            if (found)
+                fprintf(stderr,"%s: error: target '%s' does not exist\n",PROGRAM_NAME,source);
+            else
+                fprintf(stderr,"%s: error: target '%s' mapped to '%s' which does not exist\n",PROGRAM_NAME,source,dest->buffer);
+        }
         else if (check_flag == FILE_CHECK_ACCESS_DENIED)
             fprintf(stderr,"%s: error: permission denied: cannot access target '%s'\n",PROGRAM_NAME,source);
         fatal_stop("bad target");

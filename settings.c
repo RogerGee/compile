@@ -12,7 +12,7 @@ extern const char* PROGRAM_NAME;
 /* data internal to this unit */
 static compiler loaded_compilers[MAX_COMPILERS];
 static int loaded_compilers_c = 0;
-static const char* const DEFAULT_TARGET_ENTRIES = ".c gcc -o$project";
+static const char* const DEFAULT_TARGET_ENTRIES = ".c gcc -o$project\n";
 
 /* functions internal to this unit */
 static void fatal_stop(const char* message); /* system-specific implementation */
@@ -60,9 +60,11 @@ void load_compiler(compiler* pcomp,const char* entry)
     ptr = seek_until_space(entry);
     len = ptr - entry;
     assert(len > 0);
-    /* read extension; note: if extension begins with
-       a dot, the dot is excluded from the extension */
-    assign_stringbuf_ex(&pcomp->extension,entry,len);
+    /* read extension; note: if extension doesn't begin with
+       a dot then we add it here */
+    if (*entry != '.')
+        concat_stringbuf(&pcomp->extension,".");
+    concat_stringbuf_ex(&pcomp->extension,entry,len);
     entry = ptr+1;
     seek_whitespace(&entry);
     ptr = seek_until_space(entry);
@@ -101,12 +103,20 @@ void load_settings_from_file()
     fname = find_targets_file(dname);
     open_settings_file(fname);
     while (loaded_compilers_c < MAX_COMPILERS) {
+        int i;
         compiler* comp = loaded_compilers+loaded_compilers_c;
         pentry = read_next_entry();
         if (pentry == NULL)
             break;
         init_compiler(comp);
         load_compiler(comp,pentry);
+        for (i = 0;i < loaded_compilers_c;++i) {
+            if (strcmp(loaded_compilers[i].extension.buffer,comp->extension.buffer) == 0) {
+                fprintf(stderr,"%s: warning: extension '%s' appear in targets file multiple times\n",PROGRAM_NAME,comp->extension.buffer);
+                fprintf(stderr,"%s: warning: using first occurrance of extension '%s' in targets file\n",PROGRAM_NAME,comp->extension.buffer);
+                break;
+            }
+        }
         ++loaded_compilers_c;
     }
     close_settings_file(fname);

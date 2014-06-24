@@ -72,12 +72,14 @@ int main(int argc,const char* argv[])
 
 void option_help()
 {
-    printf("");
+    printf("usage: compile [target files [...]] [--help] [--version] [-compiler-option value] [---compiler-long-option]\n\
+\n\
+Written by Roger Gee <rpg11a@acu.edu\n");
 }
 
 void option_version()
 {
     char versionString[20];
     sprintf(versionString,"%hu.%.2hu",PROGRAM_MAJOR_VERSION,PROGRAM_MINOR_VERSION);
-    printf("%s %s\nThis is free software; feel free to redistribute it.\n\nWritten by Roger Gee.\n",PROGRAM_NAME,versionString);
+    printf("%s %s\n",PROGRAM_NAME,versionString);
 }
