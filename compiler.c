@@ -100,6 +100,10 @@ int compile_session(session* psession)
     init_stringbuf(&arguments);
     assign_stringbuf(&arguments,psession->compiler_info->program.buffer);
     append_terminator_stringbuf(&arguments);
+    for (i = 0;i < psession->targets_c;++i) {
+        concat_stringbuf(&arguments,psession->targets[i].buffer);
+        append_terminator_stringbuf(&arguments);
+    }
     i = 0;
     while ( psession->compiler_info->options.buffer[i] ) {
         process_option(psession,&arguments,psession->compiler_info->options.buffer+i);
@@ -109,10 +113,6 @@ int compile_session(session* psession)
     }
     for (i = 0;i < psession->options_c;++i)
         process_option(psession,&arguments,(psession->options+i)->buffer);
-    for (i = 0;i < psession->targets_c;++i) {
-        concat_stringbuf(&arguments,psession->targets[i].buffer);
-        append_terminator_stringbuf(&arguments);
-    }
     i = invoke_compiler(psession->compiler_info->program.buffer,arguments.buffer);
     if (i == -1) {
         fprintf(stderr,"%s: error: could not properly start compiler process\n",PROGRAM_NAME);
