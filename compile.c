@@ -7,7 +7,7 @@
 /* globals */
 const char* PROGRAM_NAME;
 const unsigned short PROGRAM_MAJOR_VERSION = 2;
-const unsigned short PROGRAM_MINOR_VERSION = 10; /* every increment counts as a hundreth */
+const unsigned short PROGRAM_MINOR_VERSION = 11; /* every increment counts as a hundreth */
 
 static void option_help();
 static void option_version();
@@ -68,6 +68,7 @@ int main(int argc,const char* argv[])
         unload_settings();
     }
     free((void*)compilerArgs);
+    return 0;
 }
 
 void option_help()
