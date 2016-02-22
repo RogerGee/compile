@@ -39,7 +39,7 @@ fi
 
 # create needed files
 echo "Package: compile" > $CONTROL
-echo "Version: 2.11" >> $CONTROL
+echo "Version: 2.12" >> $CONTROL
 echo "Description: invokes compiler programs with customized command-lines" >> $CONTROL
 echo "Maintainer: Roger Gee <rpg11a@acu.edu>" >> $CONTROL
 echo Architecture: $2 >> $CONTROL

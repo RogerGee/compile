@@ -7,7 +7,7 @@
 /* globals */
 const char* PROGRAM_NAME;
 const unsigned short PROGRAM_MAJOR_VERSION = 2;
-const unsigned short PROGRAM_MINOR_VERSION = 11; /* every increment counts as a hundreth */
+const unsigned short PROGRAM_MINOR_VERSION = 12; /* every increment counts as a hundreth */
 
 static void option_help();
 static void option_version();
@@ -15,6 +15,7 @@ static void option_version();
 int main(int argc,const char* argv[])
 {
     int i;
+    int ret = 0;
     int acnt; /* number of args passed to the compiler */
     int fproceed; /* if non-zero then proceed with invokation */
     char const** compilerArgs; /* arguments passed to the compiler */
@@ -50,8 +51,10 @@ int main(int argc,const char* argv[])
                     option_help();
                 else if (strcmp(option,"version") == 0)
                     option_version();
-                else
+                else {
                     fprintf(stderr,"%s: unknown option '%s'\n",argv[0],option);
+                    ret = 1;
+                }
             }
         }
         else
@@ -63,12 +66,12 @@ int main(int argc,const char* argv[])
         load_settings_from_file();
         init_session(&ses,acnt);
         load_session(&ses,acnt,compilerArgs);
-        compile_session(&ses);
+        ret = compile_session(&ses);
         destroy_session(&ses);
         unload_settings();
     }
     free((void*)compilerArgs);
-    return 0;
+    return ret;
 }
 
 void option_help()
