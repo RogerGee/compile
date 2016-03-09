@@ -109,7 +109,9 @@ int invoke_compiler(const char* compilerName,const char* arguments)
         return -1;
     if (pid != 0) {
         waitpid(pid,&status,0);
-        return status;
+        if (WIFEXITED(status))
+            return WEXITSTATUS(status);
+        return -1;
     }
     /* child process */
     /* TODO: hook into source parser if available */

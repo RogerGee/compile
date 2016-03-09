@@ -7,7 +7,7 @@
 /* globals */
 const char* PROGRAM_NAME;
 const unsigned short PROGRAM_MAJOR_VERSION = 2;
-const unsigned short PROGRAM_MINOR_VERSION = 12; /* every increment counts as a hundreth */
+const unsigned short PROGRAM_MINOR_VERSION = 13; /* every increment counts as a hundreth */
 
 static void option_help();
 static void option_version();
