@@ -21,7 +21,7 @@ static void process_target(const char* source,stringbuf* dest,compiler** pinfo);
 static int lookup_ext(const char** ext,const char* source); /* system-specific implementation */
 static int check_file(const char* fileName); /* system-specific implementation - returns FILE_CHECK code */
 static void process_option(session* psession,stringbuf* dest,char* option);
-static int invoke_compiler(const char* compilerName,const char* arguments); /* system specific implementation */
+static int invoke_compiler(const char* compilerName,const char* arguments,const char* redirect); /* system specific implementation */
 
 /* platform-dependent code */
 
@@ -96,8 +96,10 @@ void load_session(session* psession,int argc,const char** argv)
 int compile_session(session* psession)
 {
     int i;
+    stringbuf redirfile;
     stringbuf arguments;
     init_stringbuf(&arguments);
+    init_stringbuf(&redirfile);
     assign_stringbuf(&arguments,psession->compiler_info->program.buffer);
     append_terminator_stringbuf(&arguments);
     for (i = 0;i < psession->targets_c;++i) {
@@ -113,7 +115,11 @@ int compile_session(session* psession)
     }
     for (i = 0;i < psession->options_c;++i)
         process_option(psession,&arguments,(psession->options+i)->buffer);
-    i = invoke_compiler(psession->compiler_info->program.buffer,arguments.buffer);
+    if (psession->compiler_info->redirect.used > 0) {
+        process_option(psession,&redirfile,psession->compiler_info->redirect.buffer);
+    }
+    i = invoke_compiler(psession->compiler_info->program.buffer,arguments.buffer,
+            redirfile.used == 0 ? NULL : redirfile.buffer);
     if (i == -1) {
         fprintf(stderr,"%s: error: could not properly start compiler process\n",PROGRAM_NAME);
         fatal_stop("compile failure");
@@ -122,6 +128,7 @@ int compile_session(session* psession)
         fprintf(stderr,"%s: compiler process returned code %d\n",PROGRAM_NAME,i);
         fprintf(stderr,"%s: error: compilation failed\n",PROGRAM_NAME);
     }
+    destroy_stringbuf(&redirfile);
     destroy_stringbuf(&arguments);
     /* return exit code (assume 0 for success) */
     return i;
@@ -214,28 +221,42 @@ void process_option(session* psession,stringbuf* dest,char* option)
 {
     /* handle special option syntax */
     int i;
-    i = 0;
+    int j;
+    char* p;
+    i = j = 0;
+    p = NULL;
     while (option[i] && option[i]!='$')
         ++i;
-    /* copy normal option */
+
+    /* Copy portion of option leading up to '$'. */
     concat_stringbuf_ex(dest,option,i);
-    /* handle case for special option token */
+
+    /* Handle case for special option tokens. These tokens can only be
+     * alpha-numeric.
+     */
     if (option[i] == '$') {
-        int j;
-        char* p;
-        j = 0;
         p = option+i+1;
-        /* convert to lower case */
-        while ( p[j] ) {
+
+        /* Convert to lower case and seek to end of special token. */
+        while (p[j] && isalnum(p[j])) {
             p[j] = tolower( p[j] );
             ++j;
         }
-        /* replace $project with first target name */
-        if (strcmp(p,"project") == 0)
-            concat_stringbuf(dest,psession->project.buffer);
+
+        /* Replace '$project' with first target name. */
+        if (strncmp(p,"project",j) == 0)
+            concat_stringbuf_ex(dest,psession->project.buffer,j);
         else
             fprintf(stderr,"%s: warning: the special option '%s' is not recognized\n",PROGRAM_NAME,p);
+
+        i = j;
     }
+
+    /* Append any remaining characters to the option. */
+    if (p != NULL) {
+        concat_stringbuf(dest,p+j);
+    }
+
     /* separate options by null character */
     append_terminator_stringbuf(dest);
 }

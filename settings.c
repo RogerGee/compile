@@ -39,6 +39,7 @@ void init_compiler(compiler* pcomp)
     init_stringbuf(&pcomp->program);
     init_stringbuf(&pcomp->options);
     init_stringbuf(&pcomp->extension);
+    init_stringbuf(&pcomp->redirect);
     pcomp->options_c = 0;
 }
 
@@ -47,6 +48,7 @@ void destroy_compiler(compiler* pcomp)
     destroy_stringbuf(&pcomp->program);
     destroy_stringbuf(&pcomp->options);
     destroy_stringbuf(&pcomp->extension);
+    destroy_stringbuf(&pcomp->redirect);
     pcomp->options_c = 0;
 }
 
@@ -55,6 +57,7 @@ void load_compiler(compiler* pcomp,const char* entry)
     /* entry format:
         ext program option option ... */
     int len;
+    int state;
     const char* ptr;
     seek_whitespace(&entry);
     ptr = seek_until_space(entry);
@@ -78,16 +81,53 @@ void load_compiler(compiler* pcomp,const char* entry)
     /* read options: note that options are optional; special
        option tokens are prefixed by a $ sign followed by an identifier */
     pcomp->options_c = 0;
+    state = 0;
     while (*ptr) {
         entry = ptr+1;
         seek_whitespace(&entry);
         ptr = seek_until_space(entry);
         len = ptr - entry;
+        if (len == 0) {
+            continue;
+        }
+
+        /* Handle output redirect tokens. These will configure 'compile' to
+         * redirect the compiler process's output to a file.
+         */
+        if (entry[0] == '>') {
+            if (len > 1) {
+                /* The file name token is a part of the current token:
+                 *  (e.g. '>output')
+                 */
+                assign_stringbuf_ex(&pcomp->redirect,entry+1,len-1);
+            }
+            else {
+                /* The file name token will appear as the next token:
+                 *  (e.g. '> output')
+                 */
+                state = 1;
+            }
+            continue;
+        }
+        if (state == 1) {
+            assign_stringbuf_ex(&pcomp->redirect,entry,len);
+            state = 0;
+            continue;
+        }
+
         concat_stringbuf_ex(&pcomp->options,entry,len);
         /* separate the options by a zero byte */
         append_terminator_stringbuf(&pcomp->options);
         ++pcomp->options_c;
     }
+
+    /* Handle invalid output redirection. */
+    if (state != 0) {
+        fprintf(stderr,"%s: format error: output redirection operator '<' requires operand\n",
+            PROGRAM_NAME);
+        fatal_stop("formatting error in target file");
+    }
+
     /* add a final null terminator to signify the end */
     len = pcomp->options.used++;
     while (pcomp->options.used > pcomp->options.size)
@@ -119,7 +159,7 @@ void load_settings_from_file()
         }
         ++loaded_compilers_c;
     }
-    close_settings_file(fname);
+    close_settings_file();
 }
 
 void unload_settings()

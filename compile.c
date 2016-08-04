@@ -7,7 +7,8 @@
 /* globals */
 const char* PROGRAM_NAME;
 const unsigned short PROGRAM_MAJOR_VERSION = 2;
-const unsigned short PROGRAM_MINOR_VERSION = 13; /* every increment counts as a hundreth */
+const unsigned short PROGRAM_MINOR_VERSION = 2;
+const unsigned short PROGRAM_REVISION_VERSION = 0;
 
 static void option_help();
 static void option_version();
@@ -19,8 +20,15 @@ int main(int argc,const char* argv[])
     int acnt; /* number of args passed to the compiler */
     int fproceed; /* if non-zero then proceed with invokation */
     char const** compilerArgs; /* arguments passed to the compiler */
+    PROGRAM_NAME = argv[0];
+
+    /* Read and process settings file at startup. Do this before proceeding so
+     * that we can create the default targets file on startup.
+     */
+    load_settings_from_file();
+
     if (--argc == 0) {
-        fprintf(stderr,"%s: no input targets\n",argv[0]);
+        fprintf(stderr,"%s: no input targets\n",PROGRAM_NAME);
         return 1;
     }
     /* process arguments:
@@ -31,7 +39,6 @@ int main(int argc,const char* argv[])
     acnt = 0;
     fproceed = 1;
     compilerArgs = malloc(sizeof(char*)*argc);
-    PROGRAM_NAME = argv[0];
     for (i = 1;i<=argc;i++) {
         if (argv[i][0] == '-') {
             int cnt = 1;
@@ -62,21 +69,20 @@ int main(int argc,const char* argv[])
     }
     if (fproceed) {
         session ses;
-        /* read and process settings file */
-        load_settings_from_file();
         init_session(&ses,acnt);
         load_session(&ses,acnt,compilerArgs);
         ret = compile_session(&ses);
         destroy_session(&ses);
-        unload_settings();
     }
+    unload_settings();
     free((void*)compilerArgs);
     return ret;
 }
 
 void option_help()
 {
-    printf("usage: compile [target files [...]] [--help] [--version] [-compiler-option value] [---compiler-long-option]\n\
+    printf("usage: compile [target files [...]] [--help] [--version] [-compiler-option value ...]\
+[---compiler-long-option ...]\n\
 \n\
 Written by Roger Gee <rpg11a@acu.edu\n");
 }
@@ -84,6 +90,7 @@ Written by Roger Gee <rpg11a@acu.edu\n");
 void option_version()
 {
     char versionString[20];
-    sprintf(versionString,"%hu.%.2hu",PROGRAM_MAJOR_VERSION,PROGRAM_MINOR_VERSION);
+    sprintf(versionString,"%hu.%hu.%hu",PROGRAM_MAJOR_VERSION,
+        PROGRAM_MINOR_VERSION,PROGRAM_REVISION_VERSION);
     printf("%s %s\n",PROGRAM_NAME,versionString);
 }

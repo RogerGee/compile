@@ -57,6 +57,7 @@ const char* find_targets_file(const char* settingsFolder)
 			fatal_stop("cannot create default targets file");
 		WriteFile(hFile,DEFAULT_TARGET_ENTRIES,strlen(DEFAULT_TARGET_ENTRIES),&dw,NULL);
 		CloseHandle(hFile);
+		printf("%s: create default 'targets' file in '%s'\n",PROGRAM_NAME,targetsPath);
 	}
 	return targetsPath;
 }

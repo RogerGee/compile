@@ -1,6 +1,7 @@
 /* compiler_posix.c */
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h> /* requires _GNU_SOURCE to be defined */
 #include <errno.h>
@@ -98,9 +99,10 @@ int check_file(const char* fileName)
     return -1;
 }
 
-int invoke_compiler(const char* compilerName,const char* arguments)
+int invoke_compiler(const char* compilerName,const char* arguments,const char* redirect)
 {
     int i;
+    int fd;
     int status;
     pid_t pid;
     char* argv[MAX_ARGUMENT+1]; /* include the terminating NULL ptr */
@@ -124,6 +126,22 @@ int invoke_compiler(const char* compilerName,const char* arguments)
         ++i;
     }
     argv[status] = NULL;
+
+    /* If a redirect output file was specified, redirect the process's stdout
+     * to the specified file.
+     */
+    if (redirect != NULL) {
+        fd = open(redirect,O_CREAT | O_WRONLY,0666);
+        if (fd == -1) {
+            fatal_stop("cannot open redirect file");
+        }
+        if (dup2(fd,STDOUT_FILENO) == -1) {
+            fatal_stop("failed to redirect output to file");
+        }
+        close(fd);
+    }
+    
     if (execvp(compilerName,argv) == -1)
         _exit(1);
+    return 0;
 }

@@ -87,6 +87,8 @@ const char* find_targets_file(const char* settingsDir)
             else {
                 write(fd,DEFAULT_TARGET_ENTRIES,strlen(DEFAULT_TARGET_ENTRIES));
                 close(fd);
+                printf("%s: created 'targets' file with default entries in '%s'\n",
+                    PROGRAM_NAME,fnbuf);
             }
         }
         else {

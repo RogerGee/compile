@@ -1,0 +1,6 @@
+Package: compile
+Version: 2.2.0
+Maintainer: Roger Gee <rpg11a@acu.edu>
+Description: A tool to simplify compiler invocation
+Architecture: amd64
+Depends: libc6

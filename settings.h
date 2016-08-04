@@ -10,6 +10,7 @@ typedef struct {
     stringbuf options; /* string of default options to be supplied to compiler */
     stringbuf extension; /* the file extension that maps to the compiler */
     int options_c;
+    stringbuf redirect;
 } compiler;
 
 void init_compiler(compiler*);
