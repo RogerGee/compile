@@ -29,8 +29,8 @@ int lookup_ext(const char** ext,const char* source)
 	if (i > 0) {
 		/* needed directory is specified in source string */
 		stringbuf part;
-        init_stringbuf(&part);
-        assign_stringbuf_ex(&part,source,i); /* assign filePath\\ */
+		init_stringbuf(&part);
+		assign_stringbuf_ex(&part,source,i); /* assign filePath\\ */
 		concat_stringbuf(&part,"*"); /* concat to filePath\\* */
 		fFindInfo = FindFirstFile(part.buffer,&findData);
 		destroy_stringbuf(&part);
@@ -82,12 +82,14 @@ int check_file(const char* fileName)
 	return FILE_CHECK_SUCCESS;
 }
 
-int invoke_compiler(const char* compilerName,const char* arguments)
+int invoke_compiler(const char* compilerName,const char* arguments,const char* redirect)
 {
 	int i;
+	HANDLE hFile;
 	DWORD exitCode;
 	stringbuf cmdLine;
 	STARTUPINFO startInfo;
+	SECURITY_ATTRIBUTES secattribs;
 	PROCESS_INFORMATION processInfo;
 	/* compile the command line (arguments are separated by zero bytes and contains program name) */
 	init_stringbuf(&cmdLine);
@@ -104,15 +106,34 @@ int invoke_compiler(const char* compilerName,const char* arguments)
 	ZeroMemory(&processInfo,sizeof(PROCESS_INFORMATION));
 	ZeroMemory(&startInfo,sizeof(STARTUPINFO));
 	startInfo.cb = sizeof(STARTUPINFO);
+	if (redirect != NULL) {
+		ZeroMemory(&secattribs,sizeof(SECURITY_ATTRIBUTES));
+		secattribs.nLength = sizeof(SECURITY_ATTRIBUTES);
+		secattribs.bInheritHandle = TRUE;
+		hFile = CreateFile(redirect,GENERIC_WRITE,FILE_SHARE_WRITE,&secattribs,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+		if (hFile == INVALID_HANDLE_VALUE) {
+			fatal_stop("failed to open redirect file");
+		}
+		startInfo.dwFlags = STARTF_USESTDHANDLES;
+		startInfo.hStdOutput = hFile;
+		startInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+		startInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	}
+	else {
+		hFile = INVALID_HANDLE_VALUE;
+	}
 	/* run the compiler process; don't specify an application name so that
 	   the program name is run through the shell which will locate the compiler */
-	if (CreateProcess(NULL,cmdLine.buffer,NULL,NULL,FALSE,0,NULL,NULL,&startInfo,&processInfo) == 0)
+	if (CreateProcess(NULL,cmdLine.buffer,NULL,NULL,TRUE,0,NULL,NULL,&startInfo,&processInfo) == 0)
 		return -1;
 	WaitForSingleObject(processInfo.hProcess,INFINITE);
 	exitCode = -1;
 	GetExitCodeProcess(processInfo.hProcess,&exitCode);
 	CloseHandle(processInfo.hProcess);
 	CloseHandle(processInfo.hThread);
+	if (hFile != INVALID_HANDLE_VALUE) {
+		CloseHandle(hFile);
+	}
 	destroy_stringbuf(&cmdLine);
 	return (int)exitCode;
 }
