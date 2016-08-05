@@ -2,8 +2,7 @@ compile
 
 This is the source code repository for the compile program. It was written and is maintained by
 Roger Gee <rpg11a@acu.edu>. The source code should work (granted with a few modifications) on
-most major operating systems that implement POSIX plus Windows systems. For the record, I have
-not tested this on Mac OS X.
+most major operating systems that implement POSIX plus Windows systems.
 ------------------------------------------------------------------------------------------------
 Version Changelog -
 
@@ -12,6 +11,11 @@ Version Changelog -
  + targets file functionality
  + command-line options passed to compiler
  + man page documentation
+2.1.0 - fix target order in compiler command line
+2.1.1 - add return value from main
+2.1.2 - fixes to previous revision
+2.1.3 - properly handle change log
+2.2.0 - add output redirection feature
 ------------------------------------------------------------------------------------------------
 Building the project from source (Linux/OS X) -
 
@@ -29,11 +33,15 @@ $ make
 # filesystem and the necessary architecture
 $ cd repository-directory
 $ ./create-package /tmp/compile-dpkg-dir i386
+
+Debian packages should now be built under the DEBIAN subdirectory. If you use dpkg-deb then make
+sure to overwrite the symlinks with the actual binary files since it will tar the symlinks. I've
+written alternatives to dpkg-deb to work around this issue...
 ------------------------------------------------------------------------------------------------
 Building the project from source (MS Windows) -
 
 *Note: I prefer to use Microsoft-issued compilers as they have better, more up-to-date API coverage
-and produce better more efficient binaries. This code repository includes scripts to build an MS
+and produce better, more efficient binaries. This code repository includes scripts to build an MS
 Windows binary using the standard Microsoft SDK C compiler Cl.exe. You can easily modify the
 make.bat file to accommodate your compiler.
 
