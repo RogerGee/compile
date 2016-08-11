@@ -244,10 +244,13 @@ void process_option(session* psession,stringbuf* dest,char* option)
         }
 
         /* Replace '$project' with first target name. */
-        if (strncmp(p,"project",j) == 0)
-            concat_stringbuf_ex(dest,psession->project.buffer,j);
-        else
-            fprintf(stderr,"%s: warning: the special option '%s' is not recognized\n",PROGRAM_NAME,p);
+        if (strncmp(p,"project",j) == 0) {
+            concat_stringbuf(dest,psession->project.buffer);
+        }
+        else {
+            fprintf(stderr,"%s: warning: the special option '%s' is not recognized\n",
+                PROGRAM_NAME,p);
+        }
 
         i = j;
     }

@@ -8,7 +8,7 @@
 const char* PROGRAM_NAME;
 const unsigned short PROGRAM_MAJOR_VERSION = 2;
 const unsigned short PROGRAM_MINOR_VERSION = 2;
-const unsigned short PROGRAM_REVISION_VERSION = 0;
+const unsigned short PROGRAM_REVISION_VERSION = 1;
 
 static void option_help();
 static void option_version();
