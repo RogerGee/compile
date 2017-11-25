@@ -18,27 +18,22 @@ Version Changelog -
 2.2.0 - add output redirection feature
 2.2.1
     - fix bug with project target resolution
+2.3.0
+    - update build system to autoconf
+    - remove DEBIAN build file from source repository
+
 ------------------------------------------------------------------------------------------------
 Building the project from source (Linux/OS X) -
 
-Running the project make file should build the project for a POSIX-complient system. For Debian-
-like systems that implement the Debian packaging system, a standard Debian binary package (.deb
-file) can be generated using the ./create-package script. This script creates the necessary file-
-system in the location specified on its command-line with the specified architecture annotation.
+First generate the configure scripts:
 
-# building the program
-$ cd repository-directory
-$ make
+    $ autoreconf --install
 
-# building the Debian package file (should be run after make command)
-# substitute an appropriate temporary location to build the package
-# filesystem and the necessary architecture
-$ cd repository-directory
-$ ./create-package /tmp/compile-dpkg-dir i386
+Now configure and build in the standard way:
 
-Debian packages should now be built under the DEBIAN subdirectory. If you use dpkg-deb then make
-sure to overwrite the symlinks with the actual binary files since it will tar the symlinks. I've
-written alternatives to dpkg-deb to work around this issue...
+    $ ./configure
+    $ make
+
 ------------------------------------------------------------------------------------------------
 Building the project from source (MS Windows) -
 
