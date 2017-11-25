@@ -85,10 +85,17 @@ const char* find_targets_file(const char* settingsDir)
                 flag = 1;
             }
             else {
-                write(fd,DEFAULT_TARGET_ENTRIES,strlen(DEFAULT_TARGET_ENTRIES));
+                ssize_t nwritten;
+                nwritten = write(fd,DEFAULT_TARGET_ENTRIES,strlen(DEFAULT_TARGET_ENTRIES));
                 close(fd);
-                printf("%s: created 'targets' file with default entries in '%s'\n",
-                    PROGRAM_NAME,fnbuf);
+                if (nwritten == -1) {
+                    fprintf(stderr,"%s: error: failed to write default targets file\n",PROGRAM_NAME);
+                    flag = 1;
+                }
+                else {
+                    printf("%s: created 'targets' file with default entries in '%s'\n",
+                        PROGRAM_NAME,fnbuf);
+                }
             }
         }
         else {

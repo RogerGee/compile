@@ -5,6 +5,13 @@
 #include <string.h>
 #include <assert.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define PACKAGE_NAME "compile"
+#define PACKAGE_STRING "compile (build unknown)"
+#endif
+
 #define FILE_CHECK_SUCCESS 0
 #define FILE_CHECK_DOES_NOT_EXIST 1
 #define FILE_CHECK_ACCESS_DENIED 2

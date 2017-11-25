@@ -4,11 +4,15 @@
 #include <string.h>
 #include "compiler.h" /* gets settings.h */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define PACKAGE_NAME "compile"
+#define PACKAGE_STRING "compile (build unknown)"
+#endif
+
 /* globals */
 const char* PROGRAM_NAME;
-const unsigned short PROGRAM_MAJOR_VERSION = 2;
-const unsigned short PROGRAM_MINOR_VERSION = 2;
-const unsigned short PROGRAM_REVISION_VERSION = 1;
 
 static void option_help();
 static void option_version();
@@ -89,8 +93,5 @@ Written by Roger Gee <rpg11a@acu.edu\n");
 
 void option_version()
 {
-    char versionString[20];
-    sprintf(versionString,"%hu.%hu.%hu",PROGRAM_MAJOR_VERSION,
-        PROGRAM_MINOR_VERSION,PROGRAM_REVISION_VERSION);
-    printf("%s %s\n",PROGRAM_NAME,versionString);
+    printf("%s\n",PACKAGE_STRING);
 }

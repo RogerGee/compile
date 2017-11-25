@@ -5,6 +5,13 @@
 #include <assert.h>
 #include <ctype.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define PACKAGE_NAME "compile"
+#define PACKAGE_STRING "compile (build unknown)"
+#endif
+
 #define MAX_COMPILERS 512
 
 extern const char* PROGRAM_NAME;
